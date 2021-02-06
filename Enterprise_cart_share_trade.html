@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    
+
+</head>
+<body>
+	<script src="./node_modules/web3/dist/web3.min.js"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@0.18.2/dist/web3.min.js"></script> -->
+
+
+    <div class="container">
+
+        <h1>Sask Shopping Cart</h1>
+
+        <h2 id="cart"></h2>
+		
+		<img id="loader" src="https://loading.io/asset/379312">
+
+        <label for="name" class="col-lg-2 control-label">Provide Ether to send with deposit</label>
+        <input id="ethr" type="text">
+		
+		<button id="button1">Update Confirm Purchase</button>
+		
+        <label for="name" class="col-lg-2 control-label">Specify what Data to access</label>
+        <input id="datawhat" type="text">
+
+        <label for="name" class="col-lg-2 control-label">Specify Condition for data access</label>
+        <input id="conditions" type="text">
+		
+		<label for="name" class="col-lg-2 control-label">Specify purpose of data usage</label>
+        <input id="purpose" type="text">
+
+
+		<button id="button2">Update Data Access</button>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+		
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+		
+		var Cart1Contract = web3.eth.contract([
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "cancel",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "datawhat",
+				"type": "string"
+			},
+			{
+				"name": "conditions",
+				"type": "string"
+			},
+			{
+				"name": "purpose",
+				"type": "string"
+			}
+		],
+		"name": "confirmAccessed",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "confirmPurchase",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [],
+		"name": "Cancelled",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [],
+		"name": "PurchaseConfirmed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "datawhat",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "conditions",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "purpose",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "dataowneraddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "reward",
+				"type": "uint256"
+			}
+		],
+		"name": "ItemAccessed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [],
+		"name": "PayOwner",
+		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "dataconsumer",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "dataowner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "dataprice",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "state",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+]);
+		var Cart1 = Cart1Contract.at('0x176f1e7b164c2cdefa1e4349dea2b9f5fa073c7d');
+		
+		console.log(Cart1);
+		
+		var cartEvent1 = Cart1.PurchaseConfirmed();
+		cartEvent1.watch(function(error, result){
+            if(!error)
+                {
+                    $("#loader").hide();
+					$("#cart").html('Data access is granted');
+                    
+                }
+            else
+                $("loader").hide();
+        });
+
+
+        $("#button1").click( function() {
+					Cart1.confirmPurchase({
+					from: web3.eth.accounts[0], 
+					gas: 3000000, 
+					value: web3.toWei($("#ethr").val(),'ether')}, function(err,res) {})
+        });
+
+
+		var cartEvent2 = Cart1.ItemAccessed();
+		cartEvent2.watch(function(error, result){
+            if(!error)
+                {
+                    $("#loader").hide();
+					$("#cart").html(result.args.datawhat+' data has been bought with the condition '+result.args.conditions+' for the purpose of- '+result.args.purpose+' from the data owner/customer '+result.args.dataowneraddr+' and provide micropayment to the seller with an amoount of ETH'+result.args.reward/(10**18));
+                    
+                }
+            else
+                $("loader").hide();
+        });
+
+        $("#button2").click( function() {
+            Cart1.confirmAccessed($("#datawhat").val(), $("#conditions").val(), $("#purpose").val(),(err,res) => {
+				if(err) {
+					$("#loader").hide();
+					console.log("Oh! error, eh?");				
+				}
+			});
+        });
+
+     
+    </script>
+
+</body>
+</html>
